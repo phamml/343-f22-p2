@@ -35,6 +35,7 @@ body {
 
 .input {
     margin: auto;
+    text-align: center;
     max-width: 400px;
     width: 100%;
 }
@@ -81,26 +82,44 @@ button {
     background-color: #FAE0C6;
     border: 1px solid black;
     padding: 10px;
+    margin-bottom: 20px;
+    font-family: Open Sans;
 }
 
 button:hover {
     background-color: #dec7af;
 }
 
-#results {
+#results-movies {
     font-family: Average;
-    /* display: flex;
-    flex-wrap: wrap; */
+    display: flex;
+    flex-wrap: wrap;
 } 
 
-#results h3 {
+#results-movies h3 {
     font-family: Open Sans;
     font-size: 1rem;
 }
 
-.result {
-    border-bottom: 1px solid black;
-    padding-bottom: 20px;
-    /* width: 50%;
-    margin: 5px; */
+.result-movie {
+    /* border-bottom: 1px solid black;
+    padding-bottom: 20px; */
+    width: 20%;
+    margin: 5px;
+}
+
+#results-providers {
+    column-count: 6;
+    font-family: Average;
+}
+
+#results-providers h3 {
+    margin: 0px;
+    font-family: Open Sans;
+    font-size: 1rem;
+}
+
+#results-providers p {
+    margin: 0px;
+    margin-bottom: 10px;
 }
