@@ -1,22 +1,22 @@
 const searchBoxElem = document.getElementById("query");
 const searchButton = document.querySelector('.action-search');
 const resultsContainerElem1 = document.getElementById("results-movies");
-const resultsContainerElem2 = document.getElementById("results-providers");
+// const resultsContainerElem2 = document.getElementById("results-providers");
 
 const allButton1 = document.getElementById("all1");
 const filterButtonYear1 = document.getElementById("2000");
 const filterButtonYear2 = document.getElementById("2010");
 
-const allButton2 = document.getElementById("all2");
-const freeButtom = document.getElementById("free");
-const subButton = document.getElementById("sub");
-const tveButton = document.getElementById("tve");
-const purchaseButton = document.getElementById("purchase");
+// const allButton2 = document.getElementById("all2");
+// const freeButtom = document.getElementById("free");
+// const subButton = document.getElementById("sub");
+// const tveButton = document.getElementById("tve");
+// const purchaseButton = document.getElementById("purchase");
 // console.log(searchBoxElem);
 // console.log(searchButton);
 
 searchButton.addEventListener("click", whenButtonClicked);
-displayProviderResults();
+// displayProviderResults();
 let filterDate;
 let filterType;
 
@@ -66,67 +66,6 @@ async function whenButtonClicked(event) {
     populateResultsElem(resultsContainerElem1, movieResults);
 }
 
-async function displayProviderResults() {
-    const providers = await getProviders();
-    console.log("providers");
-    console.log(providers);
-
-    let providerResults = await createProviderResults(providers);
-    clearResultsElem(resultsContainerElem2);
-    populateResultsElem(resultsContainerElem2, providerResults);
-
-    allButton2.addEventListener("click", async (ev) => {
-      console.log("all2");
-      providerResults = await createProviderResults(providers);
-      clearResultsElem(resultsContainerElem2);
-      populateResultsElem(resultsContainerElem2, providerResults);
-    })
-
-    freeButtom.addEventListener("click", async (ev) => {
-      console.log("free");
-      filterType = "free";
-      providersByType = providers.filter(filterProvType);
-      // console.log(moviesByDate);
-
-      providerResults = await createProviderResults(providersByType);      
-      clearResultsElem(resultsContainerElem2);
-      populateResultsElem(resultsContainerElem2, providerResults);
-    })
-
-    subButton.addEventListener("click", async (ev) => {
-      console.log("sub");
-      filterType = "sub";
-      providersByType = providers.filter(filterProvType);
-      // console.log(moviesByDate);
-
-      providerResults = await createProviderResults(providersByType);      
-      clearResultsElem(resultsContainerElem2);
-      populateResultsElem(resultsContainerElem2, providerResults);
-    })
-
-    tveButton.addEventListener("click", async (ev) => {
-      console.log("tve");
-      filterType = "tve";
-      providersByType = providers.filter(filterProvType);
-      // console.log(moviesByDate);
-
-      providerResults = await createProviderResults(providersByType);      
-      clearResultsElem(resultsContainerElem2);
-      populateResultsElem(resultsContainerElem2, providerResults);
-    })
-
-    purchaseButton.addEventListener("click", async (ev) => {
-      console.log("purchase");
-      filterType = "purchase";
-      providersByType = providers.filter(filterProvType);
-      // console.log(moviesByDate);
-
-      providerResults = await createProviderResults(providersByType);      
-      clearResultsElem(resultsContainerElem2);
-      populateResultsElem(resultsContainerElem2, providerResults);
-    })
-}
-
 async function searchForMovies(query) {
   const movieResults = await fetch(
     `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}`
@@ -138,15 +77,15 @@ async function searchForMovies(query) {
   return movieResultsJson.results;
 }
 
-async function getProviders() {
-  const providerResults = await fetch(
-    `https://api.watchmode.com/v1/sources/?apiKey=bMVg1po77MviaBmggWxWaAgFrAjOYxfkacTB5WQW`
-  );
-  console.log("provider results");
-  console.log(providerResults);
-  const providerResultsJson = await providerResults.json();
-  console.log(providerResultsJson);
-  return providerResultsJson;
+async function getTitleDetails(id) {
+    const titleDetailResults = await fetch(
+    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=BxUJaSFDaGsqgjtUsqdzGD2BVdP6E3Wgzi0jXdmg&append_to_response=sources`
+    );
+
+    const titleDetailResultsJson = await titleDetailResults.json();
+    console.log("title detail results");
+    console.log(titleDetailResultsJson);
+    return titleDetailResultsJson;
 }
 
 function filterReleaseDate(movie) {
@@ -160,9 +99,9 @@ function filterReleaseDate(movie) {
     return year >= filterDate;
 }
 
-function filterProvType(provider) {
-  return provider.type === filterType;
-}
+// function filterProvType(provider) {
+//   return provider.type === filterType;
+// }
 
 async function createMovieResults(movieResultsJson) {  
     return movieResultsJson.map((movie, i) => {
@@ -185,24 +124,52 @@ async function createMovieResults(movieResultsJson) {
 
       resultElem.append(br);
       resultElem.append(movie.overview);
+
+      getTitleDetails(movie.id).then(data => {
+        createTitleDetailResults(data, resultElem);
+      })
+
       return resultElem;
     });
 }
 
-function createProviderResults(providerResultsJson) {
-    return providerResultsJson.map((provider, i) => {
-      let resultElem = document.createElement("div");
-      resultElem.classList.add("result-provider");
-      const h3 = document.createElement("h3");
-      const h4 = document.createElement("p");
+function createTitleDetailResults(titleDetails, resultElem) {
+    const h5 = document.createElement("h5");
+    const p = document.createElement("p");
+    p.classList.add("sources");
+    const a = document.createElement("a");
 
-      h3.append(provider.name);
-      h4.append("Type: " + provider.type);
-      resultElem.append(h3);
-      resultElem.append(h4);
+    if (titleDetails.user_rating == null) {
+      h5.append("User Rating (Out of 10): Not Available");
+    } else {
+      h5.append("User Rating (Out of 10): " + titleDetails.user_rating);
+    }
 
-      return resultElem;
-    });
+    if (titleDetails.sources.length == 0) {
+      p.append("Sources: Not available");
+    } else {
+      p.append("Sources: ");
+      for (var i = 0; i < titleDetails.sources.length; i++) {
+        if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
+          console.log("true");
+  
+          var name = titleDetails.sources[i].name;
+          var url = titleDetails.sources[i].web_url;
+    
+          console.log(name);
+          const a = document.createElement("a");
+          var link = document.createTextNode(name);
+          a.appendChild(link);
+          a.title = "hello";
+          a.href = url;
+          p.appendChild(a);
+          p.append(", ")
+        }
+      }
+    }
+
+    resultElem.append(h5);
+    resultElem.append(p)
 }
 
 function clearResultsElem(resultContainer) {

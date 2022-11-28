@@ -123,3 +123,11 @@ button:hover {
     margin: 0px;
     margin-bottom: 10px;
 }
+
+#results-movies h5 {
+    font-size: 1rem;
+}
+
+.sources {
+    font-weight: bold;
+}
