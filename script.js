@@ -7,11 +7,8 @@ const allButton1 = document.getElementById("all1");
 const filterButtonYear1 = document.getElementById("2000");
 const filterButtonYear2 = document.getElementById("2010");
 
-// const allButton2 = document.getElementById("all2");
-// const freeButtom = document.getElementById("free");
-// const subButton = document.getElementById("sub");
-// const tveButton = document.getElementById("tve");
-// const purchaseButton = document.getElementById("purchase");
+
+
 // console.log(searchBoxElem);
 // console.log(searchButton);
 
@@ -64,6 +61,27 @@ async function whenButtonClicked(event) {
 
     clearResultsElem(resultsContainerElem1);
     populateResultsElem(resultsContainerElem1, movieResults);
+
+    var coll = document.getElementsByClassName("collapse");
+    console.log("content1");
+    console.log(coll);
+    console.log(coll.length);
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        console.log(this);
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        console.log("content");
+        console.log(content);
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    }
 }
 
 async function searchForMovies(query) {
@@ -89,41 +107,41 @@ async function getTitleDetails(id) {
 }
 
 function filterReleaseDate(movie) {
-    // console.log(movie.release_date);
-    // console.log(filterDate);
-
     var year = parseInt(movie.release_date);
-    // console.log(year);
-
-    // console.log(year >= filterDate);
     return year >= filterDate;
 }
-
-// function filterProvType(provider) {
-//   return provider.type === filterType;
-// }
 
 async function createMovieResults(movieResultsJson) {  
     return movieResultsJson.map((movie, i) => {
       let resultElem = document.createElement("div");
       resultElem.classList.add("result-movie");
       const h3 = document.createElement("h3");
-      const h4 = document.createElement("h4");
+      const p = document.createElement("p");
       const img = document.createElement("img");
       const br = document.createElement("br");
+      const overviewButton = document.createElement("button");
+      overviewButton.classList.add("collapse");
+      const div = document.createElement("div");
+      div.classList.add("text");
+
 
       h3.append(movie.title);
       resultElem.append(h3);
 
-      h4.append("Release Date: " + movie.release_date);
-      resultElem.append(h4);
+      p.append("Release Date: " + movie.release_date);
+      resultElem.append(p);
 
       img.src = 'https://image.tmdb.org/t/p/w200' + movie.poster_path;
       img.alt = 'Image of ' + movie.title;
       resultElem.append(img);
 
       resultElem.append(br);
-      resultElem.append(movie.overview);
+
+      overviewButton.append("Read Movie Overview");
+      resultElem.append(overviewButton);
+
+      div.append(movie.overview);
+      resultElem.append(div);
 
       getTitleDetails(movie.id).then(data => {
         createTitleDetailResults(data, resultElem);
@@ -134,21 +152,21 @@ async function createMovieResults(movieResultsJson) {
 }
 
 function createTitleDetailResults(titleDetails, resultElem) {
-    const h5 = document.createElement("h5");
     const p = document.createElement("p");
-    p.classList.add("sources");
+    const p2 = document.createElement("p");
+    p2.classList.add("sources");
     const a = document.createElement("a");
 
     if (titleDetails.user_rating == null) {
-      h5.append("User Rating (Out of 10): Not Available");
+      p.append("User Rating (Out of 10): Not Available");
     } else {
-      h5.append("User Rating (Out of 10): " + titleDetails.user_rating);
+      p.append("User Rating (Out of 10): " + titleDetails.user_rating);
     }
 
     if (titleDetails.sources.length == 0) {
-      p.append("Sources: Not available");
+      p2.append("Sources: Not available");
     } else {
-      p.append("Sources: ");
+      p2.append("Sources: ");
       for (var i = 0; i < titleDetails.sources.length; i++) {
         if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
           console.log("true");
@@ -162,14 +180,14 @@ function createTitleDetailResults(titleDetails, resultElem) {
           a.appendChild(link);
           a.title = "hello";
           a.href = url;
-          p.appendChild(a);
-          p.append(", ")
+          p2.appendChild(a);
+          p2.append(", ")
         }
       }
     }
 
-    resultElem.append(h5);
-    resultElem.append(p)
+    resultElem.append(p);
+    resultElem.append(p2)
 }
 
 function clearResultsElem(resultContainer) {
