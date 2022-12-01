@@ -1,13 +1,13 @@
 const searchBoxElem = document.getElementById("query");
 const searchButton = document.querySelector('.action-search');
-const resultsContainerElem1 = document.getElementById("results-movies");
+const resultsContainerElem = document.getElementById("results-movies");
 // const resultsContainerElem2 = document.getElementById("results-providers");
 
 const allButton1 = document.getElementById("all1");
 const filterButtonYear1 = document.getElementById("2000");
 const filterButtonYear2 = document.getElementById("2010");
-
-
+const sortButton = document.getElementById("sortAtoZ");
+const sortButton2 = document.getElementById("sortZtoA");
 
 // console.log(searchBoxElem);
 // console.log(searchButton);
@@ -32,56 +32,76 @@ async function whenButtonClicked(event) {
       // console.log("show all");
       movieResults = await createMovieResults(movies);
 
-      clearResultsElem(resultsContainerElem1);
-      populateResultsElem(resultsContainerElem1, movieResults);
+      clearResultsElem(resultsContainerElem);
+      populateResultsElem(resultsContainerElem, movieResults);
+    })
+
+    sortButton.addEventListener("click", async (ev) => {
+      // console.log("sort");
+      movies.sort(sortAtoZ);
+      movieResults = await createMovieResults(movies);
+
+      clearResultsElem(resultsContainerElem);
+      populateResultsElem(resultsContainerElem, movieResults);
+
+    })
+
+    sortButton2.addEventListener("click", async (ev) => {
+      movies.sort(sortAtoZ);
+      movies.reverse();
+      movieResults = await createMovieResults(movies);
+
+      clearResultsElem(resultsContainerElem);
+      populateResultsElem(resultsContainerElem, movieResults);
+
     })
 
     let moviesByDate;
     filterButtonYear1.addEventListener("click", async (ev) => {
-      // console.log("filter 2000");
       filterDate = 2000;
       moviesByDate = movies.filter(filterReleaseDate);
-      // console.log(moviesByDate);
 
       movieResults = await createMovieResults(moviesByDate);
-      clearResultsElem(resultsContainerElem1);
-      populateResultsElem(resultsContainerElem1, movieResults);
+      clearResultsElem(resultsContainerElem);
+      populateResultsElem(resultsContainerElem, movieResults);
     })
 
     filterButtonYear2.addEventListener("click", async (ev) => {
-      // console.log("filter 2010");
       filterDate = 2010;
       moviesByDate = movies.filter(filterReleaseDate);
-      // console.log(moviesByDate);
 
       movieResults = await createMovieResults(moviesByDate);      
-      clearResultsElem(resultsContainerElem1);
-      populateResultsElem(resultsContainerElem1, movieResults);
+      clearResultsElem(resultsContainerElem);
+      populateResultsElem(resultsContainerElem, movieResults);
     })
 
-    clearResultsElem(resultsContainerElem1);
-    populateResultsElem(resultsContainerElem1, movieResults);
+    clearResultsElem(resultsContainerElem);
+    populateResultsElem(resultsContainerElem, movieResults);
 
-    var coll = document.getElementsByClassName("collapse");
-    console.log("content1");
-    console.log(coll);
-    console.log(coll.length);
-    var i;
+    createCollapsibles();
+}
 
-    for (i = 0; i < coll.length; i++) {
-      coll[i].addEventListener("click", function() {
-        console.log(this);
-        this.classList.toggle("active");
-        var content = this.nextElementSibling;
-        console.log("content");
-        console.log(content);
-        if (content.style.display === "block") {
-          content.style.display = "none";
-        } else {
-          content.style.display = "block";
-        }
-      });
-    }
+function createCollapsibles() {
+  var coll = document.getElementsByClassName("collapse");
+  console.log("content1");
+  console.log(coll);
+  console.log(coll.length);
+  var i;
+
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      console.log(this);
+      this.classList.toggle("active");
+      var content = this.nextElementSibling;
+      console.log("content");
+      console.log(content);
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  }
 }
 
 async function searchForMovies(query) {
@@ -106,6 +126,18 @@ async function getTitleDetails(id) {
     return titleDetailResultsJson;
 }
 
+function sortAtoZ(movie1, movie2) {
+  const title1 = movie1.title.toLowerCase(); // ignore upper and lowercase
+  const title2 = movie2.title.toLowerCase(); // ignore upper and lowercase
+  if (title1 < title2) {
+    return -1;
+  }
+  if (title1 > title2) {
+    return 1;
+  }
+  return 0;
+}
+
 function filterReleaseDate(movie) {
     var year = parseInt(movie.release_date);
     return year >= filterDate;
@@ -118,7 +150,7 @@ async function createMovieResults(movieResultsJson) {
       const h3 = document.createElement("h3");
       const p = document.createElement("p");
       const img = document.createElement("img");
-      const br = document.createElement("br");
+      // const br = document.createElement("br");
       const overviewButton = document.createElement("button");
       overviewButton.classList.add("collapse");
       const div = document.createElement("div");
@@ -128,24 +160,33 @@ async function createMovieResults(movieResultsJson) {
       h3.append(movie.title);
       resultElem.append(h3);
 
-      p.append("Release Date: " + movie.release_date);
+      if (movie.release_date.length === 0) {
+        p.append("Release Date: Not Available");
+      } else {
+        p.append("Release Date: " + movie.release_date);
+      }
       resultElem.append(p);
 
       img.src = 'https://image.tmdb.org/t/p/w200' + movie.poster_path;
       img.alt = 'Image of ' + movie.title;
       resultElem.append(img);
 
-      resultElem.append(br);
+      // resultElem.append(br);
 
       overviewButton.append("Read Movie Overview");
       resultElem.append(overviewButton);
 
-      div.append(movie.overview);
+      if (movie.overview.length === 0) {
+        // console.log("null");
+        div.append("Movie overview not available")
+      } else {
+        div.append(movie.overview);
+      }
       resultElem.append(div);
 
-      getTitleDetails(movie.id).then(data => {
-        createTitleDetailResults(data, resultElem);
-      })
+      // getTitleDetails(movie.id).then(data => {
+      //   createTitleDetailResults(data, resultElem);
+      // })
 
       return resultElem;
     });
