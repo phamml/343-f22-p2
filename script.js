@@ -34,6 +34,7 @@ async function whenButtonClicked(event) {
 
       clearResultsElem(resultsContainerElem);
       populateResultsElem(resultsContainerElem, movieResults);
+      createCollapsibles();
     })
 
     sortButton.addEventListener("click", async (ev) => {
@@ -43,7 +44,7 @@ async function whenButtonClicked(event) {
 
       clearResultsElem(resultsContainerElem);
       populateResultsElem(resultsContainerElem, movieResults);
-
+      createCollapsibles();
     })
 
     sortButton2.addEventListener("click", async (ev) => {
@@ -53,7 +54,7 @@ async function whenButtonClicked(event) {
 
       clearResultsElem(resultsContainerElem);
       populateResultsElem(resultsContainerElem, movieResults);
-
+      createCollapsibles();
     })
 
     let moviesByDate;
@@ -64,6 +65,7 @@ async function whenButtonClicked(event) {
       movieResults = await createMovieResults(moviesByDate);
       clearResultsElem(resultsContainerElem);
       populateResultsElem(resultsContainerElem, movieResults);
+      createCollapsibles();
     })
 
     filterButtonYear2.addEventListener("click", async (ev) => {
@@ -73,11 +75,11 @@ async function whenButtonClicked(event) {
       movieResults = await createMovieResults(moviesByDate);      
       clearResultsElem(resultsContainerElem);
       populateResultsElem(resultsContainerElem, movieResults);
+      createCollapsibles();
     })
 
     clearResultsElem(resultsContainerElem);
     populateResultsElem(resultsContainerElem, movieResults);
-
     createCollapsibles();
 }
 
@@ -117,12 +119,12 @@ async function searchForMovies(query) {
 
 async function getTitleDetails(id) {
     const titleDetailResults = await fetch(
-    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=BxUJaSFDaGsqgjtUsqdzGD2BVdP6E3Wgzi0jXdmg&append_to_response=sources`
+    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=Zwqu2xO4lyR8BvyulNzZe8ImTxZij4zUoMnZO5W2&append_to_response=sources`
     );
 
     const titleDetailResultsJson = await titleDetailResults.json();
-    console.log("title detail results");
-    console.log(titleDetailResultsJson);
+    // console.log("title detail results");
+    // console.log(titleDetailResultsJson);
     return titleDetailResultsJson;
 }
 
@@ -149,6 +151,7 @@ async function createMovieResults(movieResultsJson) {
       resultElem.classList.add("result-movie");
       const h3 = document.createElement("h3");
       const p = document.createElement("p");
+      p.classList.add("date")
       const img = document.createElement("img");
       // const br = document.createElement("br");
       const overviewButton = document.createElement("button");
@@ -160,16 +163,16 @@ async function createMovieResults(movieResultsJson) {
       h3.append(movie.title);
       resultElem.append(h3);
 
+      img.src = 'https://image.tmdb.org/t/p/w200' + movie.poster_path;
+      img.alt = 'Image of ' + movie.title;
+      resultElem.append(img);
+
       if (movie.release_date.length === 0) {
         p.append("Release Date: Not Available");
       } else {
         p.append("Release Date: " + movie.release_date);
       }
       resultElem.append(p);
-
-      img.src = 'https://image.tmdb.org/t/p/w200' + movie.poster_path;
-      img.alt = 'Image of ' + movie.title;
-      resultElem.append(img);
 
       // resultElem.append(br);
 
@@ -184,9 +187,11 @@ async function createMovieResults(movieResultsJson) {
       }
       resultElem.append(div);
 
-      // getTitleDetails(movie.id).then(data => {
-      //   createTitleDetailResults(data, resultElem);
-      // })
+      getTitleDetails(movie.id).then(data => {
+        console.log("data")
+        console.log(data);
+        createTitleDetailResults(data, resultElem);
+      })
 
       return resultElem;
     });
@@ -194,9 +199,19 @@ async function createMovieResults(movieResultsJson) {
 
 function createTitleDetailResults(titleDetails, resultElem) {
     const p = document.createElement("p");
+    p.classList.add("rating");
     const p2 = document.createElement("p");
     p2.classList.add("sources");
     const a = document.createElement("a");
+
+    if (!titleDetails.success) {
+      p.append("User Rating (Out of 10): Not Available");
+      p2.append("Sources: Not available");
+      resultElem.append(p);
+      resultElem.append(p2)
+      return;
+    }
+
 
     if (titleDetails.user_rating == null) {
       p.append("User Rating (Out of 10): Not Available");
@@ -210,16 +225,13 @@ function createTitleDetailResults(titleDetails, resultElem) {
       p2.append("Sources: ");
       for (var i = 0; i < titleDetails.sources.length; i++) {
         if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
-          console.log("true");
-  
           var name = titleDetails.sources[i].name;
           var url = titleDetails.sources[i].web_url;
     
-          console.log(name);
           const a = document.createElement("a");
           var link = document.createTextNode(name);
           a.appendChild(link);
-          a.title = "hello";
+          a.title = name;
           a.href = url;
           p2.appendChild(a);
           p2.append(", ")
