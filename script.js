@@ -1,7 +1,7 @@
 const searchBoxElem = document.getElementById("query");
 const searchButton = document.querySelector('.action-search');
 const resultsContainerElem = document.getElementById("results-movies");
-// const resultsContainerElem2 = document.getElementById("results-providers");
+const errorContainer = document.getElementById("error");
 
 const allButton1 = document.getElementById("all1");
 const filterButtonYear1 = document.getElementById("2000");
@@ -146,7 +146,15 @@ function filterReleaseDate(movie) {
 }
 
 async function createMovieResults(movieResultsJson) {  
+    if (movieResultsJson.length == 0) {
+      clearResultsElem(errorContainer);
+      let resultElem = document.createElement("div");
+      resultElem.classList.add("error");
+      resultElem.append("No movies matched with the given input, please try again\n");
+      errorContainer.append(resultElem);
+    }
     return movieResultsJson.map((movie, i) => {
+      clearResultsElem(errorContainer);
       let resultElem = document.createElement("div");
       resultElem.classList.add("result-movie");
       const h3 = document.createElement("h3");
