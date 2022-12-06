@@ -3,33 +3,24 @@ const searchButton = document.querySelector('.action-search');
 const resultsContainerElem = document.getElementById("results-movies");
 const errorContainer = document.getElementById("error");
 
+// Buttons for filtering and sorting
 const allButton1 = document.getElementById("all1");
 const filterButtonYear1 = document.getElementById("2000");
 const filterButtonYear2 = document.getElementById("2010");
 const sortButton = document.getElementById("sortAtoZ");
 const sortButton2 = document.getElementById("sortZtoA");
 
-// console.log(searchBoxElem);
-// console.log(searchButton);
-
 searchButton.addEventListener("click", whenButtonClicked);
-// displayProviderResults();
 let filterDate;
 let filterType;
 
 async function whenButtonClicked(event) {
-    // console.log("testing");
-    // console.log(searchBoxElem.value);   
-
     const movies = await searchForMovies(searchBoxElem.value);
-    console.log("movies=");
-    console.log(movies);
 
     let movieResults = await createMovieResults(movies);
-    console.log(movieResults);
 
+    // Display all results if button is clicked
     allButton1.addEventListener("click", async (ev) => {
-      // console.log("show all");
       movieResults = await createMovieResults(movies);
 
       clearResultsElem(resultsContainerElem);
@@ -37,8 +28,8 @@ async function whenButtonClicked(event) {
       createCollapsibles();
     })
 
+    // Display results in alphabetical order if button clicked
     sortButton.addEventListener("click", async (ev) => {
-      // console.log("sort");
       movies.sort(sortAtoZ);
       movieResults = await createMovieResults(movies);
 
@@ -47,6 +38,7 @@ async function whenButtonClicked(event) {
       createCollapsibles();
     })
 
+    // Display results in reverse alphabetical order if button clicked
     sortButton2.addEventListener("click", async (ev) => {
       movies.sort(sortAtoZ);
       movies.reverse();
@@ -57,6 +49,7 @@ async function whenButtonClicked(event) {
       createCollapsibles();
     })
 
+    // Filter results by release date if any filter buttons clicked
     let moviesByDate;
     filterButtonYear1.addEventListener("click", async (ev) => {
       filterDate = 2000;
@@ -83,20 +76,16 @@ async function whenButtonClicked(event) {
     createCollapsibles();
 }
 
+// Creates collaspsible div for movie overview
 function createCollapsibles() {
   var coll = document.getElementsByClassName("collapse");
-  console.log("content1");
-  console.log(coll);
-  console.log(coll.length);
-  var i;
 
+  var i;
   for (i = 0; i < coll.length; i++) {
     coll[i].addEventListener("click", function() {
-      console.log(this);
       this.classList.toggle("active");
       var content = this.nextElementSibling;
-      console.log("content");
-      console.log(content);
+
       if (content.style.display === "block") {
         content.style.display = "none";
       } else {
@@ -106,28 +95,26 @@ function createCollapsibles() {
   }
 }
 
+// Searches for list of movies given query string and returns array of objects
 async function searchForMovies(query) {
   const movieResults = await fetch(
     `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}`
   );
-  console.log("movie results");
-  console.log(movieResults);
   const movieResultsJson = await movieResults.json();
-  // console.log(movieResultsJson.results);
   return movieResultsJson.results;
 }
 
+// Searches for details of movie given movie ID and returns array of objects
 async function getTitleDetails(id) {
     const titleDetailResults = await fetch(
     `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=Zwqu2xO4lyR8BvyulNzZe8ImTxZij4zUoMnZO5W2&append_to_response=sources`
     );
 
     const titleDetailResultsJson = await titleDetailResults.json();
-    // console.log("title detail results");
-    // console.log(titleDetailResultsJson);
     return titleDetailResultsJson;
 }
 
+// Sorts alphabetically by movie title
 function sortAtoZ(movie1, movie2) {
   const title1 = movie1.title.toLowerCase(); // ignore upper and lowercase
   const title2 = movie2.title.toLowerCase(); // ignore upper and lowercase
@@ -140,12 +127,15 @@ function sortAtoZ(movie1, movie2) {
   return 0;
 }
 
+// Filters movies by selected date
 function filterReleaseDate(movie) {
     var year = parseInt(movie.release_date);
     return year >= filterDate;
 }
 
+// Creates HTML elements for displaying movie results
 async function createMovieResults(movieResultsJson) {  
+    // Creates error results if no movies found
     if (movieResultsJson.length == 0) {
       clearResultsElem(errorContainer);
       let resultElem = document.createElement("div");
@@ -154,6 +144,7 @@ async function createMovieResults(movieResultsJson) {
       errorContainer.append(resultElem);
     }
     return movieResultsJson.map((movie, i) => {
+      // HTML elements  
       clearResultsElem(errorContainer);
       let resultElem = document.createElement("div");
       resultElem.classList.add("result-movie");
@@ -161,12 +152,10 @@ async function createMovieResults(movieResultsJson) {
       const p = document.createElement("p");
       p.classList.add("date")
       const img = document.createElement("img");
-      // const br = document.createElement("br");
       const overviewButton = document.createElement("button");
       overviewButton.classList.add("collapse");
       const div = document.createElement("div");
       div.classList.add("text");
-
 
       h3.append(movie.title);
       resultElem.append(h3);
@@ -175,6 +164,7 @@ async function createMovieResults(movieResultsJson) {
       img.alt = 'Image of ' + movie.title;
       resultElem.append(img);
 
+      // Appends error message if no release date available
       if (movie.release_date.length === 0) {
         p.append("Release Date: Not Available");
       } else {
@@ -182,22 +172,20 @@ async function createMovieResults(movieResultsJson) {
       }
       resultElem.append(p);
 
-      // resultElem.append(br);
-
       overviewButton.append("Read Movie Overview");
       resultElem.append(overviewButton);
 
+      // Appends error message if no overview available
       if (movie.overview.length === 0) {
-        // console.log("null");
         div.append("Movie overview not available")
       } else {
         div.append(movie.overview);
       }
       resultElem.append(div);
 
+      // Gets title details for each movie in array suing second API
+      // and then creates results for title details
       getTitleDetails(movie.id).then(data => {
-        console.log("data")
-        console.log(data);
         createTitleDetailResults(data, resultElem);
       })
 
@@ -205,6 +193,7 @@ async function createMovieResults(movieResultsJson) {
     });
 }
 
+// Creates HTML elements for displaying title details of movie
 function createTitleDetailResults(titleDetails, resultElem) {
     const p = document.createElement("p");
     p.classList.add("rating");
@@ -212,6 +201,7 @@ function createTitleDetailResults(titleDetails, resultElem) {
     p2.classList.add("sources");
     const a = document.createElement("a");
 
+    // Appends error message if no title details availabel for movie
     if (!titleDetails.success) {
       p.append("User Rating (Out of 10): Not Available");
       p2.append("Sources: Not available");
@@ -220,13 +210,15 @@ function createTitleDetailResults(titleDetails, resultElem) {
       return;
     }
 
-
+    // Appends error message if no user rating available
     if (titleDetails.user_rating == null) {
       p.append("User Rating (Out of 10): Not Available");
     } else {
       p.append("User Rating (Out of 10): " + titleDetails.user_rating);
     }
 
+    // Appends error message if no sources available
+    // else create list of links to sources, making sure not to add duplicates
     if (titleDetails.sources.length == 0) {
       p2.append("Sources: Not available");
     } else {
