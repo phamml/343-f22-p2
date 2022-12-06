@@ -165,7 +165,7 @@ async function createMovieResults(movieResultsJson) {
       resultElem.append(img);
 
       // Appends error message if no release date available
-      if (movie.release_date.length === 0) {
+      if (movie.release_date.length == 0) {
         p.append("Release Date: Not Available");
       } else {
         p.append("Release Date: " + movie.release_date);
@@ -176,7 +176,7 @@ async function createMovieResults(movieResultsJson) {
       resultElem.append(overviewButton);
 
       // Appends error message if no overview available
-      if (movie.overview.length === 0) {
+      if (movie.overview.length == 0) {
         div.append("Movie overview not available")
       } else {
         div.append(movie.overview);
@@ -185,9 +185,9 @@ async function createMovieResults(movieResultsJson) {
 
       // Gets title details for each movie in array suing second API
       // and then creates results for title details
-      getTitleDetails(movie.id).then(data => {
-        createTitleDetailResults(data, resultElem);
-      })
+      // getTitleDetails(movie.id).then(data => {
+      //   createTitleDetailResults(data, resultElem);
+      // })
 
       return resultElem;
     });
