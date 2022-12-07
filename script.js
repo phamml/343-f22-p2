@@ -107,7 +107,7 @@ async function searchForMovies(query) {
 // Searches for details of movie given movie ID and returns array of objects
 async function getTitleDetails(id) {
     const titleDetailResults = await fetch(
-    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=Zwqu2xO4lyR8BvyulNzZe8ImTxZij4zUoMnZO5W2&append_to_response=sources`
+    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=yCrCVcDR00ZboyCDTLdfROZsaAm4bzIQ90FUKoOk&append_to_response=sources`
     );
 
     const titleDetailResultsJson = await titleDetailResults.json();
@@ -136,13 +136,13 @@ function filterReleaseDate(movie) {
 // Creates HTML elements for displaying movie results
 async function createMovieResults(movieResultsJson) {  
     // Creates error results if no movies found
-    if (movieResultsJson.length == 0) {
-      clearResultsElem(errorContainer);
-      let resultElem = document.createElement("div");
-      resultElem.classList.add("error");
-      resultElem.append("No movies matched with the given input, please try again\n");
-      errorContainer.append(resultElem);
-    }
+    // if (movieResultsJson.length == 0) {
+    //   clearResultsElem(errorContainer);
+    //   let resultElemError = document.createElement("div");
+    //   resultElemError.classList.add("error");
+    //   resultElemError.append("No movies matched with the given input, please try again\n");
+    //   errorContainer.append(resultElemError);
+    // }
     return movieResultsJson.map((movie, i) => {
       // HTML elements  
       clearResultsElem(errorContainer);
@@ -183,11 +183,14 @@ async function createMovieResults(movieResultsJson) {
       }
       resultElem.append(div);
 
-      // Gets title details for each movie in array suing second API
+      // console.log(movie)
+      // console.log(movie.title + " " + movie.id);
+
+      // Gets title details for each movie in array using second API
       // and then creates results for title details
-      // getTitleDetails(movie.id).then(data => {
-      //   createTitleDetailResults(data, resultElem);
-      // })
+      getTitleDetails(movie.id).then(data => {
+        createTitleDetailResults(data, resultElem);
+      })
 
       return resultElem;
     });
@@ -195,14 +198,17 @@ async function createMovieResults(movieResultsJson) {
 
 // Creates HTML elements for displaying title details of movie
 function createTitleDetailResults(titleDetails, resultElem) {
+    console.log(titleDetails);
+    console.log(Object.keys(titleDetails).length);
     const p = document.createElement("p");
     p.classList.add("rating");
     const p2 = document.createElement("p");
     p2.classList.add("sources");
     const a = document.createElement("a");
 
-    // Appends error message if no title details availabel for movie
-    if (!titleDetails.success) {
+    // Appends error message if no title details available for movie
+    if (Object.keys(titleDetails).length < 27) {
+      console.log("here");
       p.append("User Rating (Out of 10): Not Available");
       p2.append("Sources: Not available");
       resultElem.append(p);
@@ -224,7 +230,18 @@ function createTitleDetailResults(titleDetails, resultElem) {
     } else {
       p2.append("Sources: ");
       for (var i = 0; i < titleDetails.sources.length; i++) {
-        if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
+        if (titleDetails.sources.length == 2) {
+          var name = titleDetails.sources[i].name;
+          var url = titleDetails.sources[i].web_url;
+    
+          const a = document.createElement("a");
+          var link = document.createTextNode(name);
+          a.appendChild(link);
+          a.title = name;
+          a.href = url;
+          p2.appendChild(a);
+          break;
+        } else if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
           var name = titleDetails.sources[i].name;
           var url = titleDetails.sources[i].web_url;
     
