@@ -16,6 +16,7 @@ let filterType;
 
 async function whenButtonClicked(event) {
     const movies = await searchForMovies(searchBoxElem.value);
+    console.log(movies);
 
     let movieResults = await createMovieResults(movies);
 
@@ -97,17 +98,32 @@ function createCollapsibles() {
 
 // Searches for list of movies given query string and returns array of objects
 async function searchForMovies(query) {
-  const movieResults = await fetch(
-    `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}`
+  var movieResults = await fetch(
+    `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}&page=1`
   );
-  const movieResultsJson = await movieResults.json();
-  return movieResultsJson.results;
+
+  var movieResultsJson = await movieResults.json();
+  var movieResultsArray = movieResultsJson.results;
+
+  // console.log(movieResultsJson.total_pages);
+  var total_pages = movieResultsJson.total_pages;
+  if (total_pages > 1) {
+    for (var i = 2; i < total_pages + 1; i++) {
+      movieResults = await fetch(
+        `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}&page=${i}`
+      );
+      
+      movieResultsJson = await movieResults.json();
+      movieResultsArray = movieResultsArray.concat(movieResultsJson.results);
+    }
+  }
+  return movieResultsArray;
 }
 
 // Searches for details of movie given movie ID and returns array of objects
 async function getTitleDetails(id) {
     const titleDetailResults = await fetch(
-    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=yCrCVcDR00ZboyCDTLdfROZsaAm4bzIQ90FUKoOk&append_to_response=sources`
+    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=HKtjTAVdI107fbBai2HleoWfvsgvoWDxrFXPtuRU&append_to_response=sources`
     );
 
     const titleDetailResultsJson = await titleDetailResults.json();
@@ -183,9 +199,6 @@ async function createMovieResults(movieResultsJson) {
       }
       resultElem.append(div);
 
-      // console.log(movie)
-      // console.log(movie.title + " " + movie.id);
-
       // Gets title details for each movie in array using second API
       // and then creates results for title details
       getTitleDetails(movie.id).then(data => {
@@ -198,17 +211,13 @@ async function createMovieResults(movieResultsJson) {
 
 // Creates HTML elements for displaying title details of movie
 function createTitleDetailResults(titleDetails, resultElem) {
-    console.log(titleDetails);
-    console.log(Object.keys(titleDetails).length);
     const p = document.createElement("p");
     p.classList.add("rating");
     const p2 = document.createElement("p");
     p2.classList.add("sources");
-    const a = document.createElement("a");
 
     // Appends error message if no title details available for movie
     if (Object.keys(titleDetails).length < 27) {
-      console.log("here");
       p.append("User Rating (Out of 10): Not Available");
       p2.append("Sources: Not available");
       resultElem.append(p);
@@ -229,29 +238,40 @@ function createTitleDetailResults(titleDetails, resultElem) {
       p2.append("Sources: Not available");
     } else {
       p2.append("Sources: ");
-      for (var i = 0; i < titleDetails.sources.length; i++) {
-        if (titleDetails.sources.length == 2) {
-          var name = titleDetails.sources[i].name;
-          var url = titleDetails.sources[i].web_url;
+      var name;
+      var url;
+      var a;
+      var link;
+      for (var i = 0; i < titleDetails.sources.length;) {
+        if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id == titleDetails.sources[i+1].source_id) {
+          if (titleDetails.sources.length == 2) {
+            name = titleDetails.sources[i].name;
+            url = titleDetails.sources[i].web_url;
+      
+            a = document.createElement("a");
+            link = document.createTextNode(name);
+            a.appendChild(link);
+            a.title = name;
+            a.href = url;
+            p2.appendChild(a);
+            break;
+          }
+          i++;
+
+        } else {
+          name = titleDetails.sources[i].name;
+          url = titleDetails.sources[i].web_url;
     
-          const a = document.createElement("a");
-          var link = document.createTextNode(name);
+          a = document.createElement("a");
+          link = document.createTextNode(name);
           a.appendChild(link);
           a.title = name;
           a.href = url;
           p2.appendChild(a);
-          break;
-        } else if (i != titleDetails.sources.length-1 && titleDetails.sources[i].source_id != titleDetails.sources[i+1].source_id) {
-          var name = titleDetails.sources[i].name;
-          var url = titleDetails.sources[i].web_url;
-    
-          const a = document.createElement("a");
-          var link = document.createTextNode(name);
-          a.appendChild(link);
-          a.title = name;
-          a.href = url;
-          p2.appendChild(a);
-          p2.append(", ")
+          if (i != titleDetails.sources.length-1) {
+            p2.append(", ")
+          }
+          i++;
         }
       }
     }
