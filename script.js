@@ -123,7 +123,7 @@ async function searchForMovies(query) {
 // Searches for details of movie given movie ID and returns array of objects
 async function getTitleDetails(id) {
     const titleDetailResults = await fetch(
-    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=HKtjTAVdI107fbBai2HleoWfvsgvoWDxrFXPtuRU&append_to_response=sources`
+    `https://api.watchmode.com/v1/title/movie-${id}/details/?apiKey=8R0o1uWMRAvX7zbiT5SGrRizu7r5oPFc1ZwpUQn7&append_to_response=sources`
     );
 
     const titleDetailResultsJson = await titleDetailResults.json();
