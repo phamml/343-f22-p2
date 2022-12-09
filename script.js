@@ -108,14 +108,12 @@ async function searchForMovies(query) {
   // console.log(movieResultsJson.total_pages);
   var total_pages = movieResultsJson.total_pages;
   if (total_pages > 1) {
-    for (var i = 2; i < total_pages + 1; i++) {
-      movieResults = await fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}&page=${i}`
-      );
+    movieResults = await fetch(
+      `https://api.themoviedb.org/3/search/movie?api_key=e665bb78bcfd68799e240988f1797c70&query=${query}&page=${2}`
+    );
       
-      movieResultsJson = await movieResults.json();
-      movieResultsArray = movieResultsArray.concat(movieResultsJson.results);
-    }
+    movieResultsJson = await movieResults.json();
+    movieResultsArray = movieResultsArray.concat(movieResultsJson.results);
   }
   return movieResultsArray;
 }
@@ -152,15 +150,16 @@ function filterReleaseDate(movie) {
 // Creates HTML elements for displaying movie results
 async function createMovieResults(movieResultsJson) {  
     // Creates error results if no movies found
-    // if (movieResultsJson.length == 0) {
-    //   clearResultsElem(errorContainer);
-    //   let resultElemError = document.createElement("div");
-    //   resultElemError.classList.add("error");
-    //   resultElemError.append("No movies matched with the given input, please try again\n");
-    //   errorContainer.append(resultElemError);
-    // }
+    if (movieResultsJson.length == 0) {
+      clearResultsElem(errorContainer);
+      let resultElemError = document.createElement("div");
+      resultElemError.classList.add("error");
+      resultElemError.append("No movies matched with the given input, please try again\n");
+      errorContainer.append(resultElemError);
+    }
     return movieResultsJson.map((movie, i) => {
       // HTML elements  
+      console.log("hello");
       clearResultsElem(errorContainer);
       let resultElem = document.createElement("div");
       resultElem.classList.add("result-movie");
