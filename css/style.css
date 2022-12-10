@@ -118,6 +118,8 @@ button:hover {
     height: 100%;
 }
 
+/* Responsiveness for difference viewports -- as screen gets smaller reduce
+number of results in flex row and make columns slighty wider to fill screen */
 @media screen and (max-width: 1200px) {
     .result-movie {
       width: 30%; 
